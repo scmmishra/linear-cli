@@ -32,7 +32,10 @@ type Team struct {
 }
 
 type Project struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
+	Documents struct {
+		Nodes []DocumentSummary `json:"nodes"`
+	} `json:"documents"`
 }
 
 type LabelNode struct {
@@ -74,7 +77,6 @@ const issueFields = `
 	assignee { name displayName }
 	creator { name displayName }
 	team { key name }
-	project { name }
 	labels { nodes { name } }
 	createdAt
 	updatedAt
@@ -91,12 +93,18 @@ const commentFields = `
 
 // Get fetches one issue by UUID or identifier (e.g. "ENG-123").
 // withComments additionally fetches up to 250 comments, oldest first.
-func (s *IssuesService) Get(id string, withComments bool) (*Issue, error) {
-	query := `query($id: String!) { issue(id: $id) {` + issueFields + `} }`
-	if withComments {
-		query = `query($id: String!) { issue(id: $id) {` + issueFields +
-			`comments(first: 250) { nodes {` + commentFields + `} } } }`
+// withDocuments additionally fetches the issue's project documents.
+func (s *IssuesService) Get(id string, withComments, withDocuments bool) (*Issue, error) {
+	fields := issueFields
+	if withDocuments {
+		fields += `project { name documents(first: 50) { nodes {` + documentSummaryFields + `} } }`
+	} else {
+		fields += `project { name }`
 	}
+	if withComments {
+		fields += `comments(first: 250) { nodes {` + commentFields + `} }`
+	}
+	query := `query($id: String!) { issue(id: $id) {` + fields + `} }`
 
 	var resp struct {
 		Issue *Issue `json:"issue"`

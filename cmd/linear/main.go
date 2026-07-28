@@ -19,7 +19,7 @@ var version = "dev"
 // can't have arg:"" siblings to cmd:"". rewriteIDFirstGrammar swaps the id
 // and verb tokens so Kong sees its preferred verb-first form.
 var (
-	issueVerbs   = []string{"view", "comments"}
+	issueVerbs   = []string{"view", "comments", "docs"}
 	commentVerbs = []string{"view"}
 
 	contextNouns = map[string][]string{
@@ -29,7 +29,7 @@ var (
 		"document": {"view"},
 	}
 
-	helpVerbSwap = regexp.MustCompile(`\b(view|comments)\s+<id>`)
+	helpVerbSwap = regexp.MustCompile(`\b(view|comments|docs)\s+<id>`)
 )
 
 var valueTakingGlobalFlags = map[string]bool{

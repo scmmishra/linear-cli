@@ -66,11 +66,13 @@ func (c *IssuesCmd) Run(app *App) error {
 type IssueCmd struct {
 	View     IssueViewCmd     `cmd:"" default:"withargs" help:"View an issue (default)."`
 	Comments IssueCommentsCmd `cmd:"" help:"List an issue's comments."`
+	Docs     IssueDocsCmd     `cmd:"" help:"List the documents of an issue's project."`
 }
 
 type IssueViewCmd struct {
 	ID       string `arg:"" help:"Issue identifier (ENG-123), UUID, or Linear URL."`
 	Comments bool   `short:"c" help:"Also show the issue's comments."`
+	All      bool   `help:"Also show the issue's comments and its project's documents."`
 }
 
 func (c *IssueViewCmd) Run(app *App) error {
@@ -79,7 +81,8 @@ func (c *IssueViewCmd) Run(app *App) error {
 		return err
 	}
 
-	issue, err := app.Client.Issues().Get(id, c.Comments)
+	withComments := c.Comments || c.All
+	issue, err := app.Client.Issues().Get(id, withComments, c.All)
 	if err != nil {
 		return err
 	}
@@ -130,7 +133,15 @@ func (c *IssueViewCmd) Run(app *App) error {
 		app.Printer.PrintBlock(issue.Description)
 	}
 
-	if c.Comments {
+	if c.All && issue.Project != nil && len(issue.Project.Documents.Nodes) > 0 {
+		fmt.Fprintf(app.Printer.Writer, "\nDocuments (%s):\n", output.SanitizeText(issue.Project.Name))
+		for _, doc := range issue.Project.Documents.Nodes {
+			fmt.Fprintf(app.Printer.Writer, "  %s  %s  (updated %s)\n",
+				doc.SlugID, output.SanitizeText(doc.Title), formatTime(doc.UpdatedAt))
+		}
+	}
+
+	if withComments {
 		printComments(app, issue.Comments.Nodes)
 	}
 	return nil
@@ -172,6 +183,52 @@ func (c *IssueCommentsCmd) Run(app *App) error {
 
 	fmt.Fprintf(app.Printer.Writer, "%s: %s (%d comments)\n", issue.Identifier, output.SanitizeText(issue.Title), len(comments))
 	printComments(app, comments)
+	return nil
+}
+
+type IssueDocsCmd struct {
+	ID string `arg:"" help:"Issue identifier (ENG-123), UUID, or Linear URL."`
+}
+
+func (c *IssueDocsCmd) Run(app *App) error {
+	id, err := ParseIssueRef(c.ID)
+	if err != nil {
+		return err
+	}
+
+	issue, err := app.Client.Issues().Get(id, false, true)
+	if err != nil {
+		return err
+	}
+	if issue == nil {
+		return fmt.Errorf("issue %s not found", id)
+	}
+	if issue.Project == nil {
+		fmt.Printf("%s has no project, so no documents.\n", issue.Identifier)
+		return nil
+	}
+
+	docs := issue.Project.Documents.Nodes
+	if app.Printer.Format == "json" && !app.Printer.Quiet {
+		app.Printer.PrintJSON(docs)
+		return nil
+	}
+	if len(docs) == 0 {
+		fmt.Printf("No documents in project %s.\n", issue.Project.Name)
+		return nil
+	}
+
+	headers := []string{"ID", "Title", "Creator", "Updated"}
+	rows := make([][]string, 0, len(docs))
+	for _, doc := range docs {
+		rows = append(rows, []string{
+			doc.SlugID,
+			doc.Title,
+			doc.Creator.Label(),
+			formatTime(doc.UpdatedAt),
+		})
+	}
+	app.Printer.PrintTable(headers, rows)
 	return nil
 }
 

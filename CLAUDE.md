@@ -48,6 +48,7 @@ internal/
 - `issue(id:)` accepts both UUIDs and identifiers like `ENG-123`
 - `comment(id:)` accepts only UUIDs
 - `document(id:)` accepts a UUID or slug id; document URLs end in `<title-slug>-<slugId>` and `ParseDocRef` extracts the trailing slug id token
+- Documents hang off projects, not issues — `issue <id> docs` and `issue <id> --all` fetch them via `issue.project.documents`
 - Comments may have `user: null` with a `botActor` instead (integrations/bots)
 - Errors come back as `{errors: [{message}]}` with HTTP 200 or 4xx
 

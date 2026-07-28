@@ -81,7 +81,7 @@ func TestIssueGetParsesResponse(t *testing.T) {
 		}}}`))
 	})
 
-	issue, err := client.Issues().Get("ENG-123", true)
+	issue, err := client.Issues().Get("ENG-123", true, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestIssueGetNotFound(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data": {"issue": null}}`))
 	})
 
-	issue, err := client.Issues().Get("NOPE-1", false)
+	issue, err := client.Issues().Get("NOPE-1", false, false)
 	if err != nil {
 		t.Fatal(err)
 	}

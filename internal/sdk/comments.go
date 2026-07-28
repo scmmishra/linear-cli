@@ -51,7 +51,7 @@ func (s *CommentsService) Get(id string) (*Comment, error) {
 
 // ListForIssue fetches an issue's comments, oldest first.
 func (s *CommentsService) ListForIssue(issueID string) (*Issue, []Comment, error) {
-	issue, err := s.client.Issues().Get(issueID, true)
+	issue, err := s.client.Issues().Get(issueID, true, false)
 	if err != nil {
 		return nil, nil, err
 	}

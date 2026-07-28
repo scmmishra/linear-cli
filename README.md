@@ -5,7 +5,9 @@ A small CLI for [Linear](https://linear.app), focused on fetching issues and com
 ```bash
 linear issue ENG-123                 # view an issue
 linear issue ENG-123 --comments      # issue + its comments
+linear issue ENG-123 --all           # issue + comments + its project's documents
 linear issue ENG-123 comments        # just the comments
+linear issue ENG-123 docs            # just the documents of the issue's project
 linear comment <uuid>                # one comment by UUID
 linear comment '<issue-url>#comment-1a2b3c4d'   # one comment by URL
 linear issues                        # your assigned issues

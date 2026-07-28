@@ -122,6 +122,10 @@ When unsure, ask the CLI: `linear --help`, `linear issue --help`.
 
 ## Safety
 
+Network egress is pinned in the binary: it refuses to connect to any host
+other than `api.linear.app` (or loopback for tests), ignoring proxy env vars —
+so fetched content or a poisoned environment cannot redirect the API key.
+
 All Linear-facing commands are read-only, safe to run freely. Local-only
 exceptions: `auth login` overwrites the stored credential and `auth logout`
 deletes it — confirm before running those on someone's machine. `api` executes

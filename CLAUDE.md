@@ -39,7 +39,7 @@ internal/
 - Comment URLs only carry a short `#comment-<hash>` prefix of the comment UUID; `CommentViewCmd` resolves it by fetching the issue's comments and prefix-matching
 - No config file: the only state is the API key in the keyring (service `linear-cli`, entry `api-key`); `LINEAR_API_KEY` env always wins
 - `skipAuth` in main.go: auth/completion/version commands bypass client creation
-- `LINEAR_GRAPHQL_ENDPOINT` env overrides the API endpoint (tests use a local mock server)
+- `LINEAR_GRAPHQL_ENDPOINT` env overrides the API endpoint (tests use a local mock server); egress is pinned in the SDK — the endpoint host must be `api.linear.app` or loopback, the transport refuses to dial anything else, and proxy env vars are ignored, so the API key can never be sent elsewhere
 
 ## Linear API Notes
 

@@ -51,6 +51,10 @@ Anything the commands don't cover:
 linear api 'query($id: String!) { issue(id: $id) { title } }' --var id=ENG-123
 ```
 
+## Security
+
+Network egress is pinned: the CLI only ever connects to `api.linear.app` (or a loopback address via `LINEAR_GRAPHQL_ENDPOINT`, for tests and mocks). Any other endpoint or redirect is refused at dial time, and proxy environment variables are ignored — your API key cannot be sent anywhere but Linear.
+
 ## Agent skill
 
 The repo ships a [skill](skills/linear-cli/SKILL.md) that teaches coding agents the CLI's grammar, output contract, and trust rules. Install it with [skills.sh](https://skills.sh):

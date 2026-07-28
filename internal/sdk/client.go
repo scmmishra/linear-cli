@@ -2,10 +2,13 @@ package sdk
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -13,14 +16,18 @@ import (
 	"github.com/scmmishra/linear-cli/internal/output"
 )
 
-const DefaultEndpoint = "https://api.linear.app/graphql"
+const (
+	DefaultAPIHost  = "api.linear.app"
+	DefaultEndpoint = "https://" + DefaultAPIHost + "/graphql"
+)
 
 // Client is a minimal Linear GraphQL client.
 type Client struct {
-	Endpoint   string
-	APIKey     string
-	Verbose    bool
-	httpClient *http.Client
+	Endpoint    string
+	APIKey      string
+	Verbose     bool
+	httpClient  *http.Client
+	endpointErr error
 }
 
 type ClientOption func(*Client)
@@ -47,16 +54,69 @@ func NewClient(apiKey string, opts ...ClientOption) *Client {
 	c := &Client{
 		Endpoint: DefaultEndpoint,
 		APIKey:   apiKey,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
 	}
 
 	for _, opt := range opts {
 		opt(c)
 	}
 
+	// Unless a custom HTTP client was injected (tests), pin all egress to the
+	// endpoint's host, which must be Linear or loopback. The API key goes in a
+	// header on every request; this guarantees it is never sent anywhere else,
+	// even if the endpoint override or proxy env vars are attacker-controlled.
+	if c.httpClient == nil {
+		host, err := endpointHost(c.Endpoint)
+		c.endpointErr = err
+		c.httpClient = &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: pinnedTransport(host),
+		}
+	}
+
 	return c
+}
+
+// endpointHost validates that the endpoint targets the Linear API or a
+// loopback address (the only legitimate use of LINEAR_GRAPHQL_ENDPOINT:
+// local mocks and tests) and returns its hostname.
+func endpointHost(endpoint string) (string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return "", fmt.Errorf("invalid endpoint %q: %v", endpoint, err)
+	}
+	host := u.Hostname()
+	if strings.EqualFold(host, DefaultAPIHost) || isLoopbackHost(host) {
+		return host, nil
+	}
+	return "", fmt.Errorf("refusing endpoint %q: linear-cli only talks to %s or loopback addresses (check LINEAR_GRAPHQL_ENDPOINT)", endpoint, DefaultAPIHost)
+}
+
+func isLoopbackHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+// pinnedTransport returns a transport that dials only the allowed host and
+// ignores proxy environment variables, so no request — including redirects —
+// can reach any other destination.
+func pinnedTransport(allowedHost string) *http.Transport {
+	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	return &http.Transport{
+		Proxy: nil,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			host, _, err := net.SplitHostPort(addr)
+			if err != nil {
+				host = addr
+			}
+			if allowedHost == "" || !strings.EqualFold(host, allowedHost) {
+				return nil, fmt.Errorf("connection to %s blocked: linear-cli only talks to %s", addr, DefaultAPIHost)
+			}
+			return dialer.DialContext(ctx, network, addr)
+		},
+	}
 }
 
 type graphQLRequest struct {
@@ -79,6 +139,9 @@ type graphQLResponse struct {
 
 // Do executes a GraphQL query and decodes the `data` object into v.
 func (c *Client) Do(query string, variables map[string]any, v any) error {
+	if c.endpointErr != nil {
+		return c.endpointErr
+	}
 	payload, err := json.Marshal(graphQLRequest{Query: query, Variables: variables})
 	if err != nil {
 		return fmt.Errorf("failed to encode request: %w", err)

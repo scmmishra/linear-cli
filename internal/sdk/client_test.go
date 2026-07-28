@@ -99,6 +99,53 @@ func TestIssueGetParsesResponse(t *testing.T) {
 	}
 }
 
+func TestEndpointPinRefusesNonLinearHosts(t *testing.T) {
+	for _, endpoint := range []string{
+		"https://evil.example/graphql",
+		"https://api.linear.app.evil.example/graphql",
+		"http://169.254.169.254/graphql",
+	} {
+		client := NewClient("lin_api_test", WithEndpoint(endpoint))
+		err := client.Do(`query { viewer { id } }`, nil, nil)
+		if err == nil || !strings.Contains(err.Error(), "refusing endpoint") {
+			t.Errorf("endpoint %q: expected refusal, got %v", endpoint, err)
+		}
+	}
+}
+
+func TestEndpointPinAllowsLoopbackWithPinnedTransport(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"data": {"viewer": {"id": "u1"}}}`))
+	}))
+	t.Cleanup(server.Close)
+
+	// A proxy env var must not reroute traffic: the pinned transport ignores it.
+	t.Setenv("HTTPS_PROXY", "http://127.0.0.1:1")
+	t.Setenv("HTTP_PROXY", "http://127.0.0.1:1")
+
+	// No WithHTTPClient — exercises the real pinned transport.
+	client := NewClient("lin_api_test", WithEndpoint(server.URL))
+	var resp struct {
+		Viewer struct {
+			ID string `json:"id"`
+		} `json:"viewer"`
+	}
+	if err := client.Do(`query { viewer { id } }`, nil, &resp); err != nil {
+		t.Fatalf("loopback endpoint should work: %v", err)
+	}
+	if resp.Viewer.ID != "u1" {
+		t.Errorf("ID = %q", resp.Viewer.ID)
+	}
+}
+
+func TestPinnedTransportBlocksOtherHosts(t *testing.T) {
+	transport := pinnedTransport(DefaultAPIHost)
+	_, err := transport.DialContext(t.Context(), "tcp", "evil.example:443")
+	if err == nil || !strings.Contains(err.Error(), "blocked") {
+		t.Errorf("expected blocked dial, got %v", err)
+	}
+}
+
 func TestIssueGetNotFound(t *testing.T) {
 	client := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"data": {"issue": null}}`))

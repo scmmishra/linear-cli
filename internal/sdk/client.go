@@ -158,6 +158,11 @@ func (c *Client) Issues() *IssuesService {
 	return &IssuesService{client: c}
 }
 
+// Documents returns the documents service.
+func (c *Client) Documents() *DocumentsService {
+	return &DocumentsService{client: c}
+}
+
 // Comments returns the comments service.
 func (c *Client) Comments() *CommentsService {
 	return &CommentsService{client: c}

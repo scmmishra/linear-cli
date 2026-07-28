@@ -10,9 +10,12 @@ linear comment <uuid>                # one comment by UUID
 linear comment '<issue-url>#comment-1a2b3c4d'   # one comment by URL
 linear issues                        # your assigned issues
 linear issues -s "payment bug"       # search workspace issues by title
+linear docs                          # list documents
+linear docs -s roadmap               # filter documents by title
+linear doc <id-or-url>               # view a document (prints its markdown)
 ```
 
-Issue references can be an identifier (`ENG-123`), a UUID, or a full Linear URL — `linear issue https://linear.app/acme/issue/ENG-123/fix-the-thing` works.
+Issue references can be an identifier (`ENG-123`), a UUID, or a full Linear URL — `linear issue https://linear.app/acme/issue/ENG-123/fix-the-thing` works. Document references can be a UUID, a slug id, or a document URL.
 
 ## Install
 

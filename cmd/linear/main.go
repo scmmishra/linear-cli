@@ -23,8 +23,10 @@ var (
 	commentVerbs = []string{"view"}
 
 	contextNouns = map[string][]string{
-		"issue":   issueVerbs,
-		"comment": commentVerbs,
+		"issue":    issueVerbs,
+		"comment":  commentVerbs,
+		"doc":      {"view"},
+		"document": {"view"},
 	}
 
 	helpVerbSwap = regexp.MustCompile(`\b(view|comments)\s+<id>`)

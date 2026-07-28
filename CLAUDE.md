@@ -18,7 +18,7 @@ go test ./...                      # run tests
 ```
 cmd/linear/main.go         Entry point: pre-parses id-first grammar, then Kong
 internal/
-  sdk/                     GraphQL client + services (issues, comments, viewer)
+  sdk/                     GraphQL client + services (issues, comments, documents, viewer)
   cmd/                     Kong command structs with Run(app *App) error
   config/                  API key in OS keyring (LINEAR_API_KEY env wins)
   output/                  Printer: text (tabwriter), JSON, CSV formats + quiet mode
@@ -47,6 +47,7 @@ internal/
 - Personal API keys go in the `Authorization` header **as-is** (no `Bearer` prefix)
 - `issue(id:)` accepts both UUIDs and identifiers like `ENG-123`
 - `comment(id:)` accepts only UUIDs
+- `document(id:)` accepts a UUID or slug id; document URLs end in `<title-slug>-<slugId>` and `ParseDocRef` extracts the trailing slug id token
 - Comments may have `user: null` with a `botActor` instead (integrations/bots)
 - Errors come back as `{errors: [{message}]}` with HTTP 200 or 4xx
 

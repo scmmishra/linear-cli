@@ -62,6 +62,39 @@ func MatchesHashPrefix(commentUUID, hashPrefix string) bool {
 	return strings.HasPrefix(compact, hashPrefix)
 }
 
+// ParseDocRef normalizes a document reference — a UUID, a slug id, or a
+// Linear document URL (https://linear.app/<ws>/document/<title-slug>-<slugId>)
+// — into an id the API accepts. Document lookups take a UUID or slug id.
+func ParseDocRef(ref string) (string, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return "", fmt.Errorf("document reference is required")
+	}
+	if uuidRe.MatchString(ref) {
+		return ref, nil
+	}
+	if strings.Contains(ref, "://") {
+		u, err := url.Parse(ref)
+		if err != nil {
+			return "", fmt.Errorf("invalid document URL %q: %v", ref, err)
+		}
+		segments := strings.Split(strings.Trim(u.Path, "/"), "/")
+		for i, seg := range segments {
+			if seg == "document" && i+1 < len(segments) {
+				// The slug id is the trailing token of the title slug.
+				slug := segments[i+1]
+				if j := strings.LastIndex(slug, "-"); j >= 0 && j+1 < len(slug) {
+					return slug[j+1:], nil
+				}
+				return slug, nil
+			}
+		}
+		return "", fmt.Errorf("no document in URL %q", ref)
+	}
+	// A bare slug id (e.g. "3f1c2d4a5b6e") — pass through as-is.
+	return ref, nil
+}
+
 // parseIssueURL extracts the issue identifier and URL fragment from a Linear
 // issue URL: https://linear.app/<workspace>/issue/<IDENTIFIER>/<slug>#fragment
 func parseIssueURL(ref string) (id, fragment string, err error) {

@@ -18,10 +18,12 @@ type CLI struct {
 
 	// Plurals — list commands.
 	Issues IssuesCmd `cmd:"" help:"List issues (yours by default)."`
+	Docs   DocsCmd   `cmd:"" aliases:"documents" help:"List documents."`
 
 	// Singulars — context for verbs and subresources.
 	Issue   IssueCmd   `cmd:"" help:"View an issue or its comments."`
 	Comment CommentCmd `cmd:"" help:"View a comment."`
+	Doc     DocCmd     `cmd:"" aliases:"document" help:"View a document."`
 
 	// Workflow. `me` and `whoami` are aliases of `auth status`.
 	Me     MeCmd     `cmd:"" help:"Show identity and connection (alias of 'auth status')."`

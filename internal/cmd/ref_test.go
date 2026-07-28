@@ -64,6 +64,38 @@ func TestParseCommentRef(t *testing.T) {
 	}
 }
 
+func TestParseDocRef(t *testing.T) {
+	tests := []struct {
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{in: "a3f1c2d4-0000-4000-8000-000000000000", want: "a3f1c2d4-0000-4000-8000-000000000000"},
+		{in: "3f1c2d4a5b6e", want: "3f1c2d4a5b6e"},
+		{in: "https://linear.app/acme/document/roadmap-notes-3f1c2d4a5b6e", want: "3f1c2d4a5b6e"},
+		{in: "https://linear.app/acme/document/3f1c2d4a5b6e", want: "3f1c2d4a5b6e"},
+		{in: "https://linear.app/acme/issue/ENG-123/slug", wantErr: true},
+		{in: "", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		got, err := ParseDocRef(tt.in)
+		if tt.wantErr {
+			if err == nil {
+				t.Errorf("ParseDocRef(%q) expected error, got %q", tt.in, got)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("ParseDocRef(%q) unexpected error: %v", tt.in, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("ParseDocRef(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 func TestMatchesHashPrefix(t *testing.T) {
 	uuid := "a3f1c2d4-0000-4000-8000-000000000000"
 	if !MatchesHashPrefix(uuid, "a3f1c2d4") {

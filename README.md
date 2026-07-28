@@ -18,9 +18,16 @@ References are flexible: issues take an identifier (`ENG-123`), UUID, or pasted 
 
 ## Install
 
+Requires Go 1.25+ (builds from source):
+
 ```bash
-go build -o linear ./cmd/linear/
-mv linear /usr/local/bin/   # or anywhere on PATH
+curl -fsSL https://raw.githubusercontent.com/scmmishra/linear-cli/main/install.sh | sh
+```
+
+Installs to `~/.local/bin` (override with `LINEAR_INSTALL_DIR`, pin with `LINEAR_VERSION`). From a checkout, `./install.sh` builds the local source, or just:
+
+```bash
+go install github.com/scmmishra/linear-cli/cmd/linear@latest
 ```
 
 ## Authentication

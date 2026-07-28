@@ -1,4 +1,4 @@
-module github.com/chatwoot/linear-cli
+module github.com/scmmishra/linear-cli
 
 go 1.25.0
 

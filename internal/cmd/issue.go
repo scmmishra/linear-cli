@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chatwoot/linear-cli/internal/output"
-	"github.com/chatwoot/linear-cli/internal/sdk"
+	"github.com/scmmishra/linear-cli/internal/output"
+	"github.com/scmmishra/linear-cli/internal/sdk"
 )
 
 // -----------------------------------------------------------------------------

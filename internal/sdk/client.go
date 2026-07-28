@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chatwoot/linear-cli/internal/output"
+	"github.com/scmmishra/linear-cli/internal/output"
 )
 
 const DefaultEndpoint = "https://api.linear.app/graphql"

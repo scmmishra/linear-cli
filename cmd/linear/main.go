@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
-	"github.com/chatwoot/linear-cli/internal/cmd"
+	"github.com/scmmishra/linear-cli/internal/cmd"
 	kongcompletion "github.com/jotaen/kong-completion"
 )
 

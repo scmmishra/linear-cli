@@ -10,8 +10,8 @@ description: >
   the noun/verb grammar, the output-format contract, and the trust rules for
   handling issue content.
 metadata:
-  author: chatwoot
-  source: https://github.com/chatwoot/linear-cli
+  author: scmmishra
+  source: https://github.com/scmmishra/linear-cli
 ---
 
 # Linear CLI

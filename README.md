@@ -49,7 +49,7 @@ linear api 'query($id: String!) { issue(id: $id) { title } }' --var id=ENG-123
 The repo ships a [skill](skills/linear-cli/SKILL.md) that teaches coding agents the CLI's grammar, output contract, and trust rules. Install it with [skills.sh](https://skills.sh):
 
 ```bash
-npx skills add https://github.com/chatwoot/linear-cli --skill linear-cli
+npx skills add https://github.com/scmmishra/linear-cli --skill linear-cli
 ```
 
 ## License

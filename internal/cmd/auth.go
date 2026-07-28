@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/chatwoot/linear-cli/internal/config"
-	"github.com/chatwoot/linear-cli/internal/output"
+	"github.com/scmmishra/linear-cli/internal/config"
+	"github.com/scmmishra/linear-cli/internal/output"
 	"golang.org/x/term"
 )
 

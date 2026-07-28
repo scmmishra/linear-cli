@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chatwoot/linear-cli/internal/config"
-	"github.com/chatwoot/linear-cli/internal/output"
-	"github.com/chatwoot/linear-cli/internal/sdk"
+	"github.com/scmmishra/linear-cli/internal/config"
+	"github.com/scmmishra/linear-cli/internal/output"
+	"github.com/scmmishra/linear-cli/internal/sdk"
 )
 
 // App holds shared state passed to every command's Run method.
